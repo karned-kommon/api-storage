@@ -1,0 +1,12 @@
+.idea
+.vscode
+.DS_Store
+venv
+.venv
+__pycache__/
+share.py
+token_sample.py
+_mongo_data
+_cache
+report.xml
+_temp
