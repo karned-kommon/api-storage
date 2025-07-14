@@ -1,0 +1,1 @@
+Les décorateurs génériques sont sur le repo https://github.com/karned-kommon/shared

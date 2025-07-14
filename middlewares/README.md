@@ -1,0 +1,1 @@
+Les middlewares génériques sont sur le repo https://github.com/karned-kommon/shared
