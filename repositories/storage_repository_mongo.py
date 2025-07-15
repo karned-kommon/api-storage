@@ -40,8 +40,9 @@ class StorageRepositoryMongo(StorageRepository):
 
     def create_object(self, object_create: ObjectWrite) -> str:
         object_data = object_create.model_dump()
-        object_id = str(uuid4())
-        object_data["_id"] = object_id
+        # Use the provided _id if it exists, otherwise generate a new one
+        if "_id" not in object_data:
+            object_data["_id"] = str(uuid4())
         try:
             new_uuid = self.db[self.collection].insert_one(object_data)
             return new_uuid.inserted_id
@@ -49,8 +50,10 @@ class StorageRepositoryMongo(StorageRepository):
             raise ValueError(f"Failed to create object in database: {str(e)}")
 
     def create_object_with_file(self, object_data: Dict[str, Any]) -> str:
-        object_id = str(uuid4())
-        object_data["_id"] = object_id
+        # Use the provided _id if it exists, otherwise generate a new one
+        if "_id" not in object_data:
+            object_data["_id"] = str(uuid4())
+
         try:
             new_uuid = self.db[self.collection].insert_one(object_data)
             return new_uuid.inserted_id
