@@ -20,5 +20,13 @@ REDIS_PORT = int(os.environ.get('REDIS_PORT', '6379'))
 REDIS_DB = int(os.environ.get('REDIS_DB', '0'))
 REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', 'test-password')
 
+# S3 Configuration
+S3_ENDPOINT = os.environ.get('S3_ENDPOINT', 'http://minio:9000')
+S3_ACCESS_KEY = os.environ.get('S3_ACCESS_KEY', 'minioadmin')
+S3_SECRET_KEY = os.environ.get('S3_SECRET_KEY', 'minioadmin')
+S3_BUCKET_NAME = os.environ.get('S3_BUCKET_NAME', 'storage')
+S3_REGION = os.environ.get('S3_REGION', 'us-east-1')
+S3_USE_SSL = os.environ.get('S3_USE_SSL', 'False').lower() == 'true'
+
 UNPROTECTED_PATHS = ['/favicon.ico', '/docs', '/storage/openapi.json']
 UNLICENSED_PATHS = []
