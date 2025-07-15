@@ -3,14 +3,14 @@ from models.object_model import ObjectWrite
 from common_api.utils.v0 import get_state_repos
 
 
-def create_object(request, new_storage) -> str:
+def create_object(request, new_object) -> str:
     try:
         repos = get_state_repos(request)
-        new_uuid = repos.storage_repo.create_storage(new_storage)
+        new_uuid = repos.storage_repo.create_object(new_object)
         if not isinstance(new_uuid, str):
-            raise TypeError("The method create_storage did not return a str.")
+            raise TypeError("The method create_object did not return a str.")
     except Exception as e:
-        raise HTTPException(status_code = 500, detail = f"An error occurred while creating the storage: {e}")
+        raise HTTPException(status_code = 500, detail = f"An error occurred while creating the object: {e}")
 
     return new_uuid
 
@@ -18,39 +18,39 @@ def create_object(request, new_storage) -> str:
 def get_objects(request) -> list[ObjectWrite]:
     try:
         repos = get_state_repos(request)
-        storages = repos.storage_repo.list_storages()
-        if not isinstance(storages, list):
-            raise TypeError("The method list_storages did not return a list.")
+        objects = repos.storage_repo.list_objects()
+        if not isinstance(objects, list):
+            raise TypeError("The method list_objects did not return a list.")
     except Exception as e:
-        raise HTTPException(status_code = 500, detail = f"An error occurred while get the list of storages: {e}")
+        raise HTTPException(status_code = 500, detail = f"An error occurred while get the list of objects: {e}")
 
-    return storages
+    return objects
 
 
 def get_object(request, uuid: str) -> ObjectWrite:
     try:
         repos = get_state_repos(request)
-        storage = repos.storage_repo.get_storage(uuid)
+        object = repos.storage_repo.get_object(uuid)
     except Exception as e:
-        raise HTTPException(status_code = 500, detail = f"An error occurred while retrieving the storage: {e}")
+        raise HTTPException(status_code = 500, detail = f"An error occurred while retrieving the object: {e}")
 
-    if storage is None:
+    if object is None:
         raise HTTPException(status_code = 404, detail = "Storage not found")
 
-    return storage
+    return object
 
 
-def update_object(request, uuid: str, storage_update: ObjectWrite) -> None:
+def update_object(request, uuid: str, object_update: ObjectWrite) -> None:
     try:
         repos = get_state_repos(request)
-        repos.storage_repo.update_storage(uuid, storage_update)
+        repos.storage_repo.update_object(uuid, object_update)
     except Exception as e:
-        raise HTTPException(status_code = 500, detail = f"An error occurred while updating the storage: {e}")
+        raise HTTPException(status_code = 500, detail = f"An error occurred while updating the object: {e}")
 
 
 def delete_object(request, uuid: str) -> None:
     try:
         repos = get_state_repos(request)
-        repos.storage_repo.delete_storage(uuid)
+        repos.storage_repo.delete_object(uuid)
     except Exception as e:
-        raise HTTPException(status_code = 500, detail = f"An error occurred while deleting the storage: {e}")
+        raise HTTPException(status_code = 500, detail = f"An error occurred while deleting the object: {e}")

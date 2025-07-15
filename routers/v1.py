@@ -20,7 +20,8 @@ router = APIRouter(
 @check_permissions(['create'])
 async def api_create_object(request: Request, object: ObjectWrite) -> dict:
     logger.api("POST /storage/v1/")
-    object.created_by = request.state.token_info.get('user_id')
+    object.created_by = request.state.token_info.get('user_uuid')
+    logger.api(object)
     new_uuid = create_object(request, object)
     return {"uuid": new_uuid}
 

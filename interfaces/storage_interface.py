@@ -5,23 +5,23 @@ from models.object_model import ObjectWrite
 class StorageRepository(ABC):
 
     @abstractmethod
-    def create_storage(self, storage_create: ObjectWrite):
+    def create_object(self, object_create: ObjectWrite):
         pass
 
     @abstractmethod
-    def get_storage(self, storage_id: str):
+    def get_object(self, object_id: str):
         pass
 
     @abstractmethod
-    def list_storages(self):
+    def list_objects(self):
         pass
 
     @abstractmethod
-    def update_storage(self, storage_id: str, storage_update: ObjectWrite):
+    def update_object(self, object_id: str, object_update: ObjectWrite):
         pass
 
     @abstractmethod
-    def delete_storage(self, storage_id: str):
+    def delete_object(self, object_id: str):
         pass
 
     @abstractmethod

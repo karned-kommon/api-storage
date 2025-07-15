@@ -7,7 +7,7 @@ from pymongo import MongoClient
 
 from interfaces.storage_interface import StorageRepository
 from models.object_model import ObjectWrite
-from schemas.storage_schema import list_storage_serial, storage_serial
+from schemas.storage_schema import list_object_serial, object_serial
 
 def check_uri(uri):
     if not re.match(r"^mongodb://", uri):
@@ -33,39 +33,39 @@ class StorageRepositoryMongo(StorageRepository):
         self.uri = uri
         self.client = MongoClient(self.uri)
         self.db = self.client[database]
-        self.collection = "storages"
+        self.collection = "objects"
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.client.close()
 
-    def create_storage(self, storage_create: ObjectWrite) -> str:
-        storage_data = storage_create.model_dump()
-        storage_id = str(uuid4())
-        storage_data["_id"] = storage_id
+    def create_object(self, object_create: ObjectWrite) -> str:
+        object_data = object_create.model_dump()
+        object_id = str(uuid4())
+        object_data["_id"] = object_id
         try:
-            new_uuid = self.db[self.collection].insert_one(storage_data)
+            new_uuid = self.db[self.collection].insert_one(object_data)
             return new_uuid.inserted_id
         except Exception as e:
-            raise ValueError(f"Failed to create storage in database: {str(e)}")
+            raise ValueError(f"Failed to create object in database: {str(e)}")
 
-    def get_storage(self, uuid: str) -> dict:
+    def get_object(self, uuid: str) -> dict:
         result = self.db[self.collection].find_one({"_id": uuid})
         if result is None:
             return None
-        storage = storage_serial(result)
-        return storage
+        object = object_serial(result)
+        return object
 
-    def list_storages(self) -> List[dict]:
+    def list_objects(self) -> List[dict]:
         result = self.db[self.collection].find()
-        storages = list_storage_serial(result)
-        return storages
+        objects = list_object_serial(result)
+        return objects
 
-    def update_storage(self, uuid: str, storage_update: ObjectWrite) -> None:
-        update_data = {"$set": storage_update.model_dump()}
+    def update_object(self, uuid: str, object_update: ObjectWrite) -> None:
+        update_data = {"$set": object_update.model_dump()}
         self.db[self.collection].find_one_and_update({"_id": uuid}, update_data)
 
 
-    def delete_storage(self, uuid: str) -> None:
+    def delete_object(self, uuid: str) -> None:
         self.db[self.collection].delete_one({"_id": uuid})
 
     def close(self):

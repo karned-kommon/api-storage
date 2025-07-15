@@ -1,10 +1,10 @@
-def storage_serial(storage) -> dict:
+def object_serial(object) -> dict:
     return {
-        "uuid": str(storage["_id"]),
-        "name": storage["name"],
-        "created_by": storage.get("created_by")
+        "uuid": str(object["_id"]),
+        "name": object["name"],
+        "created_by": object.get("created_by")
     }
 
 
-def list_storage_serial(storages) -> list:
-    return [storage_serial(storage) for storage in storages]
+def list_object_serial(objects) -> list:
+    return [object_serial(object) for object in objects]

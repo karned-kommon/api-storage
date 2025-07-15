@@ -4,14 +4,14 @@ from repositories.storage_repository_mongo import StorageRepositoryMongo
 logger = Logger()
 
 class Repositories:
-    def __init__(self, recipe_repo=None):
-        self.recipe_repo = recipe_repo
+    def __init__(self, storage_repo=None):
+        self.storage_repo = storage_repo
 
 def get_repositories(uri):
     if uri.startswith("mongodb"):
         logger.info("Using MongoDB repositories")
         return Repositories(
-            recipe_repo=StorageRepositoryMongo(uri)
+            storage_repo=StorageRepositoryMongo(uri)
         )
 
     return Repositories
