@@ -1,5 +1,5 @@
 import re
-from typing import List
+from typing import List, Dict, Any
 from urllib.parse import urlparse
 from uuid import uuid4
 
@@ -47,6 +47,15 @@ class StorageRepositoryMongo(StorageRepository):
             return new_uuid.inserted_id
         except Exception as e:
             raise ValueError(f"Failed to create object in database: {str(e)}")
+
+    def create_object_with_file(self, object_data: Dict[str, Any]) -> str:
+        object_id = str(uuid4())
+        object_data["_id"] = object_id
+        try:
+            new_uuid = self.db[self.collection].insert_one(object_data)
+            return new_uuid.inserted_id
+        except Exception as e:
+            raise ValueError(f"Failed to create object with file in database: {str(e)}")
 
     def get_object(self, uuid: str) -> dict:
         result = self.db[self.collection].find_one({"_id": uuid})

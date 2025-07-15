@@ -1,9 +1,10 @@
-from fastapi import APIRouter, HTTPException, status, Request
+from fastapi import APIRouter, HTTPException, status, Request, File, UploadFile, Form, Depends
 from config.config import API_TAG_NAME
 from common_api.decorators.v0.check_permission import check_permissions
 from models.object_model import ObjectWrite, ObjectRead
 from common_api.services.v0 import Logger
 from services.storage_service import create_object, get_objects, get_object, update_object, delete_object
+from typing import Optional
 
 logger = Logger()
 
@@ -18,11 +19,20 @@ router = APIRouter(
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 @check_permissions(['create'])
-async def api_create_object(request: Request, object: ObjectWrite) -> dict:
+async def api_create_object(
+    request: Request, 
+    name: str = Form(...),
+    description: Optional[str] = Form(None),
+    file: UploadFile = File(None)
+) -> dict:
     logger.api("POST /storage/v1/")
-    object.created_by = request.state.token_info.get('user_uuid')
+    object = ObjectWrite(
+        name=name,
+        description=description,
+        created_by=request.state.token_info.get('user_uuid')
+    )
     logger.api(object)
-    new_uuid = create_object(request, object)
+    new_uuid = create_object(request, object, file)
     return {"uuid": new_uuid}
 
 

@@ -1,11 +1,16 @@
 from abc import ABC, abstractmethod
 from models.object_model import ObjectWrite
+from typing import Dict, Any
 
 
 class StorageRepository(ABC):
 
     @abstractmethod
     def create_object(self, object_create: ObjectWrite):
+        pass
+
+    @abstractmethod
+    def create_object_with_file(self, object_data: Dict[str, Any]):
         pass
 
     @abstractmethod

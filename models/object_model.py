@@ -7,6 +7,7 @@ class ObjectRead(BaseModel):
     name: str
     description: Optional[str] = None
     created_by: Optional[str] = Field(None, description="User who created the object")
+    file_path: Optional[str] = Field(None, description="Path to the uploaded file")
 
 
 class ObjectWrite(BaseModel):

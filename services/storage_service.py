@@ -1,12 +1,42 @@
-from fastapi import HTTPException
+from fastapi import HTTPException, UploadFile
 from models.object_model import ObjectWrite
 from common_api.utils.v0 import get_state_repos
+import os
+import shutil
+from uuid import uuid4
 
 
-def create_object(request, new_object) -> str:
+def create_object(request, new_object, file: UploadFile = None) -> str:
     try:
         repos = get_state_repos(request)
-        new_uuid = repos.storage_repo.create_object(new_object)
+
+        # Handle file upload if provided
+        file_path = None
+        if file and file.filename:
+            # Create uploads directory if it doesn't exist
+            upload_dir = "uploads"
+            os.makedirs(upload_dir, exist_ok=True)
+
+            # Generate a unique filename
+            file_ext = os.path.splitext(file.filename)[1]
+            unique_filename = f"{uuid4()}{file_ext}"
+            file_path = os.path.join(upload_dir, unique_filename)
+
+            # Save the file
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+
+            # Reset file position
+            file.file.seek(0)
+
+        # Add file path to object if a file was uploaded
+        if file_path:
+            new_object_dict = new_object.model_dump()
+            new_object_dict["file_path"] = file_path
+            new_uuid = repos.storage_repo.create_object_with_file(new_object_dict)
+        else:
+            new_uuid = repos.storage_repo.create_object(new_object)
+
         if not isinstance(new_uuid, str):
             raise TypeError("The method create_object did not return a str.")
     except Exception as e:
