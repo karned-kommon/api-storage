@@ -7,7 +7,7 @@ from pymongo import MongoClient
 
 from interfaces.storage_interface import StorageRepository
 from models.object_model import ObjectWrite
-from schemas.storage_schema import list_object_serial, object_serial
+from schemas.object_schema import list_object_serial, object_serial
 
 def check_uri(uri):
     if not re.match(r"^mongodb://", uri):
