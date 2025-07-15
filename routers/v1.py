@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException, status, Request
 from config.config import API_TAG_NAME
 from common_api.decorators.v0.check_permission import check_permissions
-from models.storage_model import StorageWrite, StorageRead
+from models.object_model import ObjectWrite, ObjectRead
 from common_api.services.v0 import Logger
-from services.storages_service import create_storage, get_storages, get_storage, update_storage, delete_storage
+from services.storage_service import create_object, get_objects, get_object, update_object, delete_object
 
 logger = Logger()
 
@@ -18,39 +18,39 @@ router = APIRouter(
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 @check_permissions(['create'])
-async def create_new_storage(request: Request, storage: StorageWrite) -> dict:
+async def api_create_object(request: Request, object: ObjectWrite) -> dict:
     logger.api("POST /storage/v1/")
-    storage.created_by = request.state.token_info.get('user_id')
-    new_uuid = create_storage(request, storage)
+    object.created_by = request.state.token_info.get('user_id')
+    new_uuid = create_object(request, object)
     return {"uuid": new_uuid}
 
 
-@router.get("/", status_code=status.HTTP_200_OK, response_model=list[StorageRead])
+@router.get("/", status_code=status.HTTP_200_OK, response_model=list[ObjectRead])
 @check_permissions(['read', 'read_own'])
-async def read_storages(request: Request):
+async def api_read_objects(request: Request):
     logger.api("GET /storage/v1/")
-    return get_storages(request)
+    return get_objects(request)
 
 
-@router.get("/{uuid}", status_code=status.HTTP_200_OK, response_model=StorageRead)
+@router.get("/{uuid}", status_code=status.HTTP_200_OK, response_model=ObjectRead)
 @check_permissions(['list', 'list_own'])
-async def read_storage(request: Request, uuid: str):
+async def api_read_object(request: Request, uuid: str):
     logger.api("GET /storage/v1/{uuid}")
-    storage = get_storage(request, uuid)
-    if storage is None:
+    object = get_object(request, uuid)
+    if object is None:
         raise HTTPException(status_code=404, detail="Storage not found")
-    return storage
+    return object
 
 
 @router.put("/{uuid}", status_code=status.HTTP_204_NO_CONTENT)
 @check_permissions(['update', 'update_own'])
-async def update_existing_storage(request: Request, uuid: str, storage_update: StorageWrite):
+async def api_update_object(request: Request, uuid: str, object_update: ObjectWrite):
     logger.api("PUT /storage/v1/{uuid}")
-    update_storage(request, uuid, storage_update)
+    update_object(request, uuid, object_update)
 
 
 @router.delete("/{uuid}", status_code=status.HTTP_204_NO_CONTENT)
 @check_permissions(['delete', 'delete_own'])
-async def delete_existing_storage(request: Request, uuid: str):
+async def api_delete_object(request: Request, uuid: str):
     logger.api("DELETE /storage/v1/{uuid}")
-    delete_storage(request, uuid)
+    delete_object(request, uuid)

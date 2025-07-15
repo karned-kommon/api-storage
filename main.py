@@ -38,9 +38,9 @@ def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
     openapi_schema = get_openapi(
-        title="API Recipe",
+        title="API Storage",
         version="1.0.0",
-        description="Cookbook storage for all !",
+        description="Object storage for all !",
         routes=app.routes,
     )
     openapi_schema["components"]["securitySchemes"] = {

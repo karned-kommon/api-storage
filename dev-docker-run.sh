@@ -25,7 +25,7 @@ docker run -d \
   -e URL_API_GATEWAY=http://api-gateway-service \
   -e API_NAME=api-storage \
   -e API_TAG_NAME=storage \
-  killiankopp/api-storage:1.1.1 \
+  killiankopp/api-storage:1.0.0 \
   uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
 echo "Development container started. Your local code is mounted at /app in the container."

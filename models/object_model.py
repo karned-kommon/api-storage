@@ -1,11 +1,13 @@
 from pydantic import BaseModel
 from typing import Optional
 
-class StorageRead(BaseModel):
+
+class ObjectRead(BaseModel):
     uuid: str
     name: str
     description: Optional[str] = None
 
-class StorageWrite(BaseModel):
+
+class ObjectWrite(BaseModel):
     name: str
     description: Optional[str] = None

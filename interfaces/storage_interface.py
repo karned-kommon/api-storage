@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
-from models.storage_model import StorageWrite
+from models.object_model import ObjectWrite
 
 
 class StorageRepository(ABC):
 
     @abstractmethod
-    def create_storage(self, storage_create: StorageWrite):
+    def create_storage(self, storage_create: ObjectWrite):
         pass
 
     @abstractmethod
@@ -17,7 +17,7 @@ class StorageRepository(ABC):
         pass
 
     @abstractmethod
-    def update_storage(self, storage_id: str, storage_update: StorageWrite):
+    def update_storage(self, storage_id: str, storage_update: ObjectWrite):
         pass
 
     @abstractmethod

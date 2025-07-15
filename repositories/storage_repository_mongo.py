@@ -6,7 +6,7 @@ from uuid import uuid4
 from pymongo import MongoClient
 
 from interfaces.storage_interface import StorageRepository
-from models.storage_model import StorageWrite
+from models.object_model import ObjectWrite
 from schemas.storage_schema import list_storage_serial, storage_serial
 
 def check_uri(uri):
@@ -38,7 +38,7 @@ class StorageRepositoryMongo(StorageRepository):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.client.close()
 
-    def create_storage(self, storage_create: StorageWrite) -> str:
+    def create_storage(self, storage_create: ObjectWrite) -> str:
         storage_data = storage_create.model_dump()
         storage_id = str(uuid4())
         storage_data["_id"] = storage_id
@@ -60,7 +60,7 @@ class StorageRepositoryMongo(StorageRepository):
         storages = list_storage_serial(result)
         return storages
 
-    def update_storage(self, uuid: str, storage_update: StorageWrite) -> None:
+    def update_storage(self, uuid: str, storage_update: ObjectWrite) -> None:
         update_data = {"$set": storage_update.model_dump()}
         self.db[self.collection].find_one_and_update({"_id": uuid}, update_data)
 
