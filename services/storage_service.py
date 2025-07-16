@@ -1,7 +1,7 @@
 from fastapi import HTTPException, UploadFile
 from models.object_model import ObjectWrite
 from common_api.utils.v0 import get_state_repos
-from utils.object_handler import upload_file_to_s3
+from repositories.storage_repository_s3 import StorageRepositoryS3
 
 
 def create_object(request, new_object, file: UploadFile = None) -> str:
@@ -15,8 +15,9 @@ def create_object(request, new_object, file: UploadFile = None) -> str:
         # Handle file upload if provided
         file_path = None
         if file and file.filename:
-            # Upload file to S3 using the object handler with the generated UUID
-            file_path, _ = upload_file_to_s3(file, custom_uuid=new_uuid)
+            # Upload file to S3 using the S3Repository with the generated UUID
+            s3_repo = StorageRepositoryS3()
+            file_path, _ = s3_repo.upload_file_to_bucket(file, custom_uuid=new_uuid)
 
         # Add file path and UUID to object
         new_object_dict = new_object.model_dump()
