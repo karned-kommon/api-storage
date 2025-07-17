@@ -4,7 +4,6 @@ from uuid import uuid4
 from fastapi import UploadFile
 from tempfile import SpooledTemporaryFile
 from botocore.client import Config
-from config.config import S3_ENDPOINT, S3_ACCESS_KEY, S3_SECRET_KEY, S3_REGION, S3_USE_SSL, S3_BUCKET_NAME
 from interfaces.storage_bucket_interface import StorageBucketRepository
 
 
@@ -15,42 +14,55 @@ def generate_unique_filename(original_filename, custom_uuid=None):
     return f"{uuid4()}{file_ext}"
 
 
-def get_client():
+def get_client(credentials):
+    endpoint = credentials.get('endpoint')
+    access_key = credentials.get('access_key')
+    secret_key = credentials.get('secret_key')
+    region = credentials.get('region', 'us-east-1')
+    use_ssl = credentials.get('use_ssl', False)
+
     s3_client = boto3.client(
         's3',
-        endpoint_url=S3_ENDPOINT,
-        aws_access_key_id=S3_ACCESS_KEY,
-        aws_secret_access_key=S3_SECRET_KEY,
-        region_name=S3_REGION,
+        endpoint_url=endpoint,
+        aws_access_key_id=access_key,
+        aws_secret_access_key=secret_key,
+        region_name=region,
         config=Config(signature_version='s3v4'),
-        use_ssl=S3_USE_SSL
+        use_ssl=use_ssl
     )
     return s3_client
 
+def check_credentials(credentials):
+    required_fields = ['endpoint', 'access_key', 'secret_key']
+    if not credentials or not all(credentials.get(field) for field in required_fields):
+        raise ValueError("Invalid S3 credentials: Missing required fields.")
+
+
 
 class StorageRepositoryS3(StorageBucketRepository):
-    def __init__(self):
-        self.bucket_name = S3_BUCKET_NAME
+    def __init__(self, credentials):
+        check_credentials(credentials)
+        self.credentials = credentials
+        self.bucket_name = credentials.get('bucket_name', 'storage')
+        self.client = get_client(credentials)
 
     def ensure_bucket_exists(self):
-        s3_client = get_client()
         try:
-            s3_client.head_bucket(Bucket=self.bucket_name)
+            self.client.head_bucket(Bucket=self.bucket_name)
         except:
-            s3_client.create_bucket(Bucket=self.bucket_name)
+            self.client.create_bucket(Bucket=self.bucket_name)
         return self.bucket_name
 
     def download_file_from_bucket(self, file_path: str):
         if not file_path:
             return None
 
-        s3_client = get_client()
         bucket_name = self.ensure_bucket_exists()
         file_key = file_path.replace(f"s3://{bucket_name}/", "")
 
         try:
             file_content = SpooledTemporaryFile()
-            s3_client.download_fileobj(bucket_name, file_key, file_content)
+            self.client.download_fileobj(bucket_name, file_key, file_content)
             file_content.seek(0)
             return file_content
         except Exception as e:
@@ -60,21 +72,19 @@ class StorageRepositoryS3(StorageBucketRepository):
         if not file_path:
             return
 
-        s3_client = get_client()
         bucket_name = self.ensure_bucket_exists()
         file_key = file_path.replace(f"s3://{bucket_name}/", "")
 
         try:
-            s3_client.delete_object(Bucket=bucket_name, Key=file_key)
+            self.client.delete_object(Bucket=bucket_name, Key=file_key)
         except Exception as e:
             raise ValueError(f"Failed to delete file from bucket: {str(e)}")
 
     def list_files_in_bucket(self):
-        s3_client = get_client()
         bucket_name = self.ensure_bucket_exists()
 
         try:
-            response = s3_client.list_objects_v2(Bucket=bucket_name)
+            response = self.client.list_objects_v2(Bucket=bucket_name)
             if 'Contents' not in response:
                 return {}
 
@@ -92,8 +102,7 @@ class StorageRepositoryS3(StorageBucketRepository):
         file_content = file.file.read()
         file.file.seek(0)
 
-        s3_client = get_client()
-        s3_client.upload_fileobj(
+        self.client.upload_fileobj(
             file.file, 
             bucket_name, 
             unique_filename,
@@ -111,3 +120,7 @@ class StorageRepositoryS3(StorageBucketRepository):
             file.file = new_file
 
         return file_path, file_content
+
+    def close(self):
+        # No need to explicitly close the boto3 client
+        pass

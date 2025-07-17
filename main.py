@@ -8,6 +8,8 @@ from common_api.middlewares.v1 import TokenVerificationMiddleware
 from common_api.middlewares.v1 import DBConnectionMiddleware
 from common_api.middlewares.v1 import LicenceVerificationMiddleware
 from common_api.middlewares.v1 import CustomCORSMiddleware
+
+from middlewares.storage_middleware import StorageConnectionMiddleware
 from routers import v1
 from common_api.services.v0 import Logger
 from common_api.config import init_config
@@ -65,6 +67,7 @@ def custom_openapi():
     return app.openapi_schema
 app.openapi = custom_openapi
 
+app.add_middleware(StorageConnectionMiddleware)
 app.add_middleware(DBConnectionMiddleware)
 app.add_middleware(LicenceVerificationMiddleware)
 app.add_middleware(TokenVerificationMiddleware)
