@@ -6,7 +6,6 @@ from tempfile import SpooledTemporaryFile
 from botocore.client import Config
 from interfaces.storage_bucket_interface import StorageBucketRepository
 
-
 def generate_unique_filename(original_filename, custom_uuid=None):
     file_ext = os.path.splitext(original_filename)[1]
     if custom_uuid:

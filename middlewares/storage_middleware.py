@@ -47,8 +47,8 @@ def get_credential(token: str, licence: str) -> dict:
 
     return credential
 
-def check_store( store ):
-    if store is None:
+def check_stores( stores ):
+    if stores is None:
         raise Exception("StorageConnectionMiddleware: Error: No repository found")
 
 
@@ -62,10 +62,10 @@ class StorageConnectionMiddleware(BaseHTTPMiddleware):
         try:
             if not is_unprotected_path(request.url.path):
                 token = extract_token(request)
-                credential = get_credential(token=token, licence=request.state.licence_uuid)
+                credentials = get_credential(token=token, licence=request.state.licence_uuid)
 
-                stores = get_bucket_repositories(credentials=credential.get('credentials'))
-                check_store(stores)
+                stores = get_bucket_repositories(credentials=credentials)
+                check_stores(stores)
                 request.state.stores = stores
 
             response = await call_next(request)

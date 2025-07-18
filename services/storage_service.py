@@ -7,6 +7,7 @@ from repositories.storage_repository_s3 import StorageRepositoryS3
 def create_object(request, new_object, file: UploadFile = None) -> str:
     try:
         repos = get_state_repos(request)
+        stores = get_state_stores(request)
 
         # Generate a UUID for both database and S3 (if needed)
         from uuid import uuid4
@@ -16,8 +17,7 @@ def create_object(request, new_object, file: UploadFile = None) -> str:
         file_path = None
         if file and file.filename:
             # Upload file to S3 using the S3Repository with the generated UUID
-            s3_repo = StorageRepositoryS3()
-            file_path, _ = s3_repo.upload_file_to_bucket(file, custom_uuid=new_uuid)
+            file_path, _ = stores.storage_bucket_repo.upload_file_to_bucket(file, custom_uuid=new_uuid)
 
         # Add file path and UUID to object
         new_object_dict = new_object.model_dump()

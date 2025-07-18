@@ -28,10 +28,10 @@ def get_repositories(uri: str) -> Repositories | Type[Repositories]:
 
 
 def get_bucket_repositories(credentials) -> BucketRepositories | Type[BucketRepositories]:
-    if credentials.startswith("s3"):
+    if isinstance(credentials, dict) and "s3" in credentials:
         logger.info("Using S3 bucket repositories")
         return BucketRepositories(
-            storage_bucket_repo = StorageRepositoryS3(credentials)
+            storage_bucket_repo = StorageRepositoryS3(credentials["s3"])
         )
 
     return BucketRepositories
