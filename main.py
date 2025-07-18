@@ -8,8 +8,8 @@ from common_api.middlewares.v1 import TokenVerificationMiddleware
 from common_api.middlewares.v1 import DBConnectionMiddleware
 from common_api.middlewares.v1 import LicenceVerificationMiddleware
 from common_api.middlewares.v1 import CustomCORSMiddleware
-
 from middlewares.storage_middleware import StorageConnectionMiddleware
+
 from routers import v1
 from common_api.services.v0 import Logger
 from common_api.config import init_config

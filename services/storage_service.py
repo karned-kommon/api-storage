@@ -1,7 +1,6 @@
 from fastapi import HTTPException, UploadFile
 from models.object_model import ObjectWrite
-from common_api.utils.v0 import get_state_repos
-from repositories.storage_repository_s3 import StorageRepositoryS3
+from common_api.utils.v0 import get_state_repos, get_state_stores
 
 
 def create_object(request, new_object, file: UploadFile = None) -> str:
@@ -9,29 +8,22 @@ def create_object(request, new_object, file: UploadFile = None) -> str:
         repos = get_state_repos(request)
         stores = get_state_stores(request)
 
-        # Generate a UUID for both database and S3 (if needed)
         from uuid import uuid4
         new_uuid = str(uuid4())
 
-        # Handle file upload if provided
         file_path = None
         if file and file.filename:
-            # Upload file to S3 using the S3Repository with the generated UUID
             file_path, _ = stores.storage_bucket_repo.upload_file_to_bucket(file, custom_uuid=new_uuid)
 
-        # Add file path and UUID to object
         new_object_dict = new_object.model_dump()
         if file_path:
             new_object_dict["file_path"] = file_path
 
-        # Add the UUID to the object data
         new_object_dict["_id"] = new_uuid
 
-        # Create the object in the database
         if file_path:
             repos.storage_repo.create_object_with_file(new_object_dict)
         else:
-            # For consistency, we'll use the same approach for both cases
             repos.storage_repo.create_object_with_file(new_object_dict)
 
         if not isinstance(new_uuid, str):
