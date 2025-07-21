@@ -70,6 +70,21 @@ def update_object(request, uuid: str, object_update: ObjectWrite) -> None:
 def delete_object(request, uuid: str) -> None:
     try:
         repos = get_state_repos(request)
+        stores = get_state_stores(request)
+        
+        # First, get the object to retrieve its file_path
+        object_data = repos.storage_repo.get_object(uuid)
+        if object_data is None:
+            raise HTTPException(status_code=404, detail="Storage not found")
+        
+        # Delete the file from bucket if it exists
+        if object_data.get("file_path"):
+            stores.storage_bucket_repo.delete_file_from_bucket(object_data["file_path"])
+        
+        # Then delete the database record
         repos.storage_repo.delete_object(uuid)
+    except HTTPException:
+        # Re-raise HTTPException as is
+        raise
     except Exception as e:
         raise HTTPException(status_code = 500, detail = f"An error occurred while deleting the object: {e}")
