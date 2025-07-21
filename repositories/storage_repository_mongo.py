@@ -73,7 +73,10 @@ class StorageRepositoryMongo(StorageRepository):
         return objects
 
     def update_object(self, uuid: str, object_update: ObjectWrite) -> None:
-        update_data = {"$set": object_update.model_dump()}
+        # Exclude created_by from updates to keep it immutable
+        update_fields = object_update.model_dump()
+        update_fields.pop('created_by', None)  # Remove created_by if present
+        update_data = {"$set": update_fields}
         self.db[self.collection].find_one_and_update({"_id": uuid}, update_data)
 
 
