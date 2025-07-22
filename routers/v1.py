@@ -65,3 +65,28 @@ async def api_update_object(request: Request, uuid: str, object_update: ObjectWr
 async def api_delete_object(request: Request, uuid: str):
     logger.api("DELETE /storage/v1/{uuid}")
     delete_object(request, uuid)
+
+
+@router.post("/{uuid}/public_url", status_code=status.HTTP_200_OK)
+@check_permissions(['read', 'read_own'])
+async def api_get_public_url(request: Request, uuid: str, ttl: int = Form(3600)):
+    logger.api("POST /storage/v1/{uuid}/public_url")
+    
+    # Get the object to retrieve its file_path
+    object_data = get_object(request, uuid)
+    if not object_data:
+        raise HTTPException(status_code=404, detail="Storage not found")
+    
+    # Check if the object has a file associated with it
+    file_path = getattr(object_data, 'file_path', None)
+    if not file_path:
+        raise HTTPException(status_code=404, detail="No file associated with this object")
+    
+    # Generate the public URL
+    try:
+        from common_api.utils.v0 import get_state_stores
+        stores = get_state_stores(request)
+        public_url = stores.storage_bucket_repo.get_public_url(file_path, ttl)
+        return {"public_url": public_url, "expires_in": ttl}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate public URL: {str(e)}")
