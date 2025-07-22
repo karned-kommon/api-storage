@@ -3,7 +3,7 @@ from config.config import API_TAG_NAME
 from common_api.decorators.v0.check_permission import check_permissions
 from models.object_model import ObjectWrite, ObjectRead
 from common_api.services.v0 import Logger
-from services.storage_service import create_object, get_objects, get_object, update_object, delete_object
+from services.storage_service import create_object, get_objects, get_object, update_object, delete_object, get_public_url_for_object
 from typing import Optional
 
 logger = Logger()
@@ -70,23 +70,24 @@ async def api_delete_object(request: Request, uuid: str):
 @router.post("/{uuid}/public_url", status_code=status.HTTP_200_OK)
 @check_permissions(['read', 'read_own'])
 async def api_get_public_url(request: Request, uuid: str, ttl: int = Form(3600)):
+    """
+    Generate a temporary public URL for accessing a stored file.
+    
+    This endpoint creates a pre-signed URL that allows temporary access to files
+    stored in S3 without requiring authentication. The URL expires after the
+    specified time-to-live (TTL) period.
+    
+    Args:
+        request: FastAPI request object with authentication context
+        uuid: Unique identifier of the storage object
+        ttl: Time-to-live for the URL in seconds (default: 3600 = 1 hour)
+        
+    Returns:
+        JSON response containing the public URL and expiration time
+        
+    Raises:
+        404: If the object doesn't exist or has no associated file
+        500: If URL generation fails
+    """
     logger.api("POST /storage/v1/{uuid}/public_url")
-    
-    # Get the object to retrieve its file_path
-    object_data = get_object(request, uuid)
-    if not object_data:
-        raise HTTPException(status_code=404, detail="Storage not found")
-    
-    # Check if the object has a file associated with it
-    file_path = getattr(object_data, 'file_path', None)
-    if not file_path:
-        raise HTTPException(status_code=404, detail="No file associated with this object")
-    
-    # Generate the public URL
-    try:
-        from common_api.utils.v0 import get_state_stores
-        stores = get_state_stores(request)
-        public_url = stores.storage_bucket_repo.get_public_url(file_path, ttl)
-        return {"public_url": public_url, "expires_in": ttl}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate public URL: {str(e)}")
+    return get_public_url_for_object(request, uuid, ttl)

@@ -88,3 +88,40 @@ def delete_object(request, uuid: str) -> None:
         raise
     except Exception as e:
         raise HTTPException(status_code = 500, detail = f"An error occurred while deleting the object: {e}")
+
+
+def get_public_url_for_object(request, uuid: str, ttl: int = 3600) -> dict:
+    """
+    Generate a temporary public URL for accessing an S3 object.
+    
+    Args:
+        request: FastAPI request object containing authentication and state
+        uuid: Unique identifier of the storage object
+        ttl: Time-to-live for the URL in seconds (default: 3600)
+    
+    Returns:
+        Dictionary containing the public URL and expiration time
+        
+    Raises:
+        HTTPException: If object not found, no file associated, or URL generation fails
+    """
+    try:
+        # Get the object to retrieve its file_path
+        object_data = get_object(request, uuid)
+        
+        # Check if the object has a file associated with it
+        file_path = getattr(object_data, 'file_path', None)
+        if not file_path:
+            raise HTTPException(status_code=404, detail="No file associated with this object")
+        
+        # Generate the public URL using the storage bucket repository
+        stores = get_state_stores(request)
+        public_url = stores.storage_bucket_repo.get_public_url(file_path, ttl)
+        
+        return {"public_url": public_url, "expires_in": ttl}
+        
+    except HTTPException:
+        # Re-raise HTTPException as is
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate public URL: {str(e)}")
