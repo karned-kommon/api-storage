@@ -25,5 +25,9 @@ class StorageBucketRepository(ABC):
         pass
 
     @abstractmethod
+    def get_public_url(self, file_path: str, ttl: int = 3600) -> str:
+        pass
+
+    @abstractmethod
     def close(self):
         pass
