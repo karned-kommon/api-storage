@@ -6,9 +6,6 @@ from tempfile import SpooledTemporaryFile
 from botocore.client import Config
 from interfaces.storage_bucket_interface import StorageBucketRepository
 
-from common_api.services.v0 import Logger
-logger = Logger()
-
 def generate_unique_filename(original_filename, custom_uuid=None):
     file_ext = os.path.splitext(original_filename)[1]
     if custom_uuid:
@@ -130,9 +127,6 @@ class StorageRepositoryS3(StorageBucketRepository):
 
         bucket_name = self.ensure_bucket_exists()
         file_key = file_path.replace(f"s3://{bucket_name}/", "")
-
-        logger.info(bucket_name)
-        logger.info(file_key)
 
         try:
             public_url = self.client.generate_presigned_url(
