@@ -120,6 +120,24 @@ class StorageRepositoryS3(StorageBucketRepository):
 
         return file_path, file_content
 
+    def get_public_url(self, file_path: str, ttl: int = 3600) -> str:
+        """Generate a temporary public URL for an S3 object"""
+        if not file_path:
+            raise ValueError("File path cannot be empty")
+
+        bucket_name = self.ensure_bucket_exists()
+        file_key = file_path.replace(f"s3://{bucket_name}/", "")
+
+        try:
+            public_url = self.client.generate_presigned_url(
+                'get_object',
+                Params={'Bucket': bucket_name, 'Key': file_key},
+                ExpiresIn=ttl
+            )
+            return public_url
+        except Exception as e:
+            raise ValueError(f"Failed to generate public URL: {str(e)}")
+
     def close(self):
         # No need to explicitly close the boto3 client
         pass
